@@ -1,0 +1,4 @@
+*.pyc
+/secrets
+*.sqlite
+test.py
