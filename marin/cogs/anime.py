@@ -1,5 +1,3 @@
-from pprint import pprint
-import re
 import requests
 from nextcord import *
 from nextcord import Interaction, SlashOption, Colour, Embed

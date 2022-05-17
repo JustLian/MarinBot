@@ -12,6 +12,10 @@ cur.execute(f'''CREATE TABLE IF NOT EXISTS users (
     uId INT,
     osuId INT
 )''')
+cur.execute(f'''CREATE TABLE IF NOT EXISTS servers (
+    id INT,
+    memes_channel INT
+)''')
 
 
 def account_exists(uId) -> bool:
@@ -19,9 +23,9 @@ def account_exists(uId) -> bool:
     cur = db.cursor()
     cur.execute(f'''SELECT * FROM users WHERE uId = {uId}''')
     data = cur.fetchone()
-    return data is not None
     cur.close()
     db.close()
+    return data is not None
 
 
 def create_account(uId, osuId) -> None:

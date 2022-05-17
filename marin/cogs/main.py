@@ -106,6 +106,39 @@ class Main(commands.Cog):
         em.set_thumbnail(url='attachment://happy-5.gif')
         await inter.edit_original_message(embed=em, file=nextcord.File('./assets/happy-5.gif'))
 
+    @nextcord.slash_command('mass_voice', 'Mute/unmute/deafen/undeafen all users in voicechannel', GUILDS)
+    async def cmd_mass_voice(self, inter: Interaction, action: str = SlashOption('action', required=True, choices=['mute', 'deafen']), toggle: bool = SlashOption('toggle', required=True)):
+        await inter.response.defer()
+
+        # checking permissions
+        if (action == 'mute' and inter.user.guild_permissions.mute_members is False) or (action == 'deafen' and inter.user.guild_permissions.deafen_members is False):
+            em = Embed(title="No permissions",
+                       description="You don't have enough permissions to execute that command!", colour=Colour.brand_red())
+            em.set_thumbnail(url='attachment://sad-3.png')
+            await inter.edit_original_message(embed=em, file=nextcord.File('./assets/sad-3.gif'))
+            return
+
+        # checking voice channel
+        if inter.user.voice is None:
+            em = Embed(title='You are not in VC!',
+                       description='You need to join some VC to do that!', colour=Colour.brand_red())
+            em.set_thumbnail(url='attachment://sad-3.png')
+            await inter.edit_original_message(embed=em, file=nextcord.File('./assets/sad-3.png'))
+            return
+
+        em = Embed(
+            title='Gotcha!', description=f'I will apply action {action}:{toggle} to all users in VC!', colour=Colour.purple())
+        em.set_thumbnail(url='attachment://happy-5.gif')
+        em.set_author(name=inter.user.name,
+                      icon_url=inter.user.avatar.url if inter.user.avatar is not None else None)
+        await inter.edit_original_message(embed=em, file=nextcord.File('./assets/happy-5.gif'))
+
+        for user in inter.user.voice.channel.members:
+            if action == 'mute':
+                await user.edit(mute=toggle)
+            else:
+                await user.edit(deafen=toggle)
+
     @tasks.loop(minutes=1)
     async def remind_loop(self):
         global reminds
