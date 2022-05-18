@@ -82,10 +82,10 @@ async def start_radio(bot: commands.Bot, guild_id: int, after=None) -> None:
             after()
         for player in entries:
             await channel.edit(name=channel.name.split(' | ')[0] + ' | ' + player[2])
-            flag = asyncio.Event()
-            guild.voice_client.play(player[0], after=lambda e: flag.set() or print(
+            guild.voice_client.play(player[0], after=lambda e: print(
                 f'Player error: {e}') if e else None)
-            await flag.wait()
+            while guild.voice_client.is_playing():
+                await asyncio.sleep(2)
 
 
 class Radio(commands.Cog):
