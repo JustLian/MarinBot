@@ -35,6 +35,20 @@ def create_server(id) -> None:
     db.close()
 
 
+def delete_server(id) -> None:
+    db = _connect_db()
+    cur = db.cursor()
+
+    cur.execute(f'''SELECT * FROM servers WHERE id = {id}''')
+    data = cur.fetchone()
+    if data is not None:
+        cur.execute(
+            f'''DELETE FROM servers WHERE id = {id}''')
+        db.commit()
+    cur.close()
+    db.close()
+
+
 def get_server(id) -> dict:
     db = _connect_db()
     cur = db.cursor()
@@ -52,7 +66,7 @@ def get_servers() -> list[int]:
     d = cur.fetchall()
     cur.close()
     db.close()
-    return d[0]
+    return list(map(lambda x: x[0], d))
 
 
 def update_server(id, *args) -> None:

@@ -3,3 +3,4 @@
 *.sqlite
 test.py
 /assets/greeting-pictures
+changelog.txt

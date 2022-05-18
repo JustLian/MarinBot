@@ -25,6 +25,11 @@ async def on_guild_join(guild):
     db.create_server(guild.id)
 
 
+@bot.event
+async def on_guild_remove(guild):
+    db.delete_server(guild.id)
+
+
 print('Loading ', colored('Marin', 'magenta'), '...', sep='')
 for ext in os.listdir('./marin/cogs/'):
     if ext.endswith('.py'):

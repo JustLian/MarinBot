@@ -1,4 +1,3 @@
-from tracemalloc import start
 import marin.db as db
 from nextcord import *
 from nextcord import Interaction, SlashOption, Colour
@@ -29,6 +28,7 @@ ytdl_format_options = {
 
 ffmpeg_options = {
     'options': '-vn',
+    'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'
 }
 
 ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
@@ -54,11 +54,11 @@ class YTDLSource(nextcord.PCMVolumeTransformer):
                 filename = entry['url'] if stream else ytdl.prepare_filename(
                     entry)
                 entrs.append((cls(nextcord.FFmpegPCMAudio(
-                    filename, **ffmpeg_options), data=entry), entry['duration']))
+                    filename, **ffmpeg_options), data=entry), entry['duration'], entry['title']))
         return entrs
 
 
-async def start_radio(bot: commands.Bot, guild_id: int) -> None:
+async def start_radio(bot: commands.Bot, guild_id: int, after=None) -> None:
     data = db.get_server(guild_id)
     guild = await bot.fetch_guild(guild_id)
     try:
@@ -78,11 +78,14 @@ async def start_radio(bot: commands.Bot, guild_id: int) -> None:
                 break
 
         entries = await YTDLSource.from_url(data['playlist_url'], loop=bot.loop, stream=True)
+        if after is not None:
+            after()
         for player in entries:
-
-            guild.voice_client.play(player[0], after=lambda e: print(
+            await channel.edit(name=channel.name.split(' | ')[0] + ' | ' + player[2])
+            flag = asyncio.Event()
+            guild.voice_client.play(player[0], after=lambda e: flag.set() or print(
                 f'Player error: {e}') if e else None)
-            await asyncio.sleep(player[1] + 2)
+            await flag.wait()
 
 
 class Radio(commands.Cog):
@@ -94,8 +97,11 @@ class Radio(commands.Cog):
         for guild_id in db.get_servers():
             if db.get_server(guild_id)['radio_enabled'] == 0:
                 continue
-
-            await start_radio(self.bot, guild_id)
+            try:
+                await asyncio.create_task(start_radio(self.bot, guild_id))
+            except Exception as e:
+                print(
+                    f'Error occurred in start_radio({self.bot}, {guild_id}): {e}')
 
     @nextcord.slash_command('setup_radio', 'Setup 24/7 radio on your server', GUILDS)
     async def cmd_setup_radio(self, inter: Interaction, url: str = SlashOption('playlist_link', 'Playlist link', True)):
@@ -165,14 +171,14 @@ class Radio(commands.Cog):
             if inter.guild.voice_client is not None:
                 await inter.guild.voice_client.disconnect(force=True)
 
-            asyncio.get_event_loop().create_task(start_radio(self.bot, inter.guild.id))
+            flag = asyncio.Event()
+            asyncio.get_event_loop().create_task(
+                start_radio(self.bot, inter.guild.id, flag.set))
 
             em.title = 'Setting everything up! Currently trying to get your playlist.'
             await inter.edit_original_message(embed=em)
 
-            await asyncio.sleep(4)
-            while not inter.guild.voice_client.is_playing():
-                await asyncio.sleep(2)
+            await flag.wait()
 
             db.update_server(inter.guild.id, ('radio_enabled', 1))
             em.title = 'Everything is done!'
