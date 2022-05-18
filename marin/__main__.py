@@ -1,6 +1,7 @@
 import asyncio
 import os
 import nextcord
+import marin.db as db
 from termcolor import colored
 from nextcord import *
 from nextcord.ext import commands
@@ -17,6 +18,11 @@ async def on_ready():
     print('Loaded ', colored('Marin', 'magenta'), '!', sep='')
     await asyncio.sleep(2)
     await bot.change_presence(activity=nextcord.Activity(type=nextcord.ActivityType.playing, name='/help'), status=nextcord.Status.online)
+
+
+@bot.event
+async def on_guild_join(guild):
+    db.create_server(guild.id)
 
 
 print('Loading ', colored('Marin', 'magenta'), '...', sep='')
