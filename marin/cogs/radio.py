@@ -53,8 +53,8 @@ class YTDLSource(nextcord.PCMVolumeTransformer):
             for entry in data['entries']:
                 filename = entry['url'] if stream else ytdl.prepare_filename(
                     entry)
-                entrs.append(cls(nextcord.FFmpegPCMAudio(
-                    filename, **ffmpeg_options), data=entry))
+                entrs.append((cls(nextcord.FFmpegPCMAudio(
+                    filename, **ffmpeg_options), data=entry), entry['duration']))
         return entrs
 
 
@@ -76,17 +76,13 @@ async def start_radio(bot: commands.Bot, guild_id: int) -> None:
                 await channel.connect()
             else:
                 break
+
         entries = await YTDLSource.from_url(data['playlist_url'], loop=bot.loop, stream=True)
         for player in entries:
 
-            guild.voice_client.play(player, after=lambda e: print(
+            guild.voice_client.play(player[0], after=lambda e: print(
                 f'Player error: {e}') if e else None)
-            await asyncio.sleep(8)
-            try:
-                while guild.voice_client.is_playing():
-                    await asyncio.sleep(3)
-            except:
-                break
+            await asyncio.sleep(player[1] + 2)
 
 
 class Radio(commands.Cog):
@@ -174,7 +170,7 @@ class Radio(commands.Cog):
             em.title = 'Setting everything up! Currently trying to get your playlist.'
             await inter.edit_original_message(embed=em)
 
-            await asyncio.sleep(2)
+            await asyncio.sleep(4)
             while not inter.guild.voice_client.is_playing():
                 await asyncio.sleep(2)
 

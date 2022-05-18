@@ -2,3 +2,5 @@ nextcord
 asyncio
 termcolor
 mojang
+youtube_dl
+PyNaCl
