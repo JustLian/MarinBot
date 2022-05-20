@@ -17,7 +17,8 @@ cur.execute(f'''CREATE TABLE IF NOT EXISTS servers (
     memes_channel INT,
     music_channel INT,
     radio_enabled INT,
-    playlist_url TEXT
+    playlist_url TEXT,
+    card_style TEXT
 )''')
 
 
@@ -29,7 +30,7 @@ def create_server(id) -> None:
     data = cur.fetchone()
     if data is None:
         cur.execute(
-            f'''INSERT INTO servers VALUES({id}, 0, 0, 0, "NONE")''')
+            f'''INSERT INTO servers VALUES({id}, 0, 0, 0, "NONE",'''''' "{}")''')
         db.commit()
     cur.close()
     db.close()
@@ -73,8 +74,16 @@ def update_server(id, *args) -> None:
     db = _connect_db()
     cur = db.cursor()
     for st in args:
+        if type(st[1]) == int:
+            val = st[1]
+        elif type(st[1]) == dict:
+            val = json.dumps(st[1])
+        elif type(st[1]) == str:
+            val = f'"{st[1]}"'
+        else:
+            continue
         cur.execute(
-            f'''UPDATE servers SET {st[0]} = {st[1] if type(st[1]) == int else f'"{st[1]}"'} WHERE id = {id}''')
+            f'''UPDATE servers SET {st[0]} = {val} WHERE id = {id}''')
     db.commit()
     cur.close()
     db.close()

@@ -1,6 +1,5 @@
 from datetime import timedelta, datetime
-from nextcord import *
-from nextcord import Interaction, SlashOption, Colour
+from nextcord import Interaction, SlashOption, Colour, Embed
 import nextcord
 from nextcord.ext import commands, tasks
 import requests
@@ -37,7 +36,7 @@ class Main(commands.Cog):
         for field in fields.keys():
             em.add_field(name=field, value=fields[field], inline=False)
 
-        await inter.edit_original_message(embed=em, file=nextcord.File('./assets/happy-2.png'))
+        await inter.edit_original_message(embed=em, file=nextcord.File('./assets/emotes/happy-2.png'))
 
     @nextcord.slash_command('remind', 'Ping you in specific channel after specific amount of time', GUILDS)
     async def cmd_remind(self, inter: Interaction, time: str = SlashOption('remind_in', 'Time in format MM-HH-DD', True), message: str = SlashOption('message', 'I will send this message with ping!', False)):
@@ -49,7 +48,7 @@ class Main(commands.Cog):
             em = nextcord.Embed(
                 title="Wrong time format", description="Correct time format is MM-HH-DD. If you think something is wrong with me, tell about that to my devs!", colour=Colour.brand_red())
             em.set_thumbnail(url='attachment://sad-2.gif')
-            await inter.edit_original_message(embed=em, file=nextcord.File('./assets/sad-2.gif'))
+            await inter.edit_original_message(embed=em, file=nextcord.File('./assets/emotes/sad-2.gif'))
             return
 
         if len(time) == 1:
@@ -66,7 +65,7 @@ class Main(commands.Cog):
         em = Embed(title="I've got you!",
                    description=f"Now just wait! I will ping you in this channel in {':'.join(time)} MM:HH:DD", colour=Colour.purple())
         em.set_thumbnail(url='attachment://happy-4.png')
-        await inter.edit_original_message(embed=em, file=nextcord.File('./assets/happy-4.png'))
+        await inter.edit_original_message(embed=em, file=nextcord.File('./assets/emotes/happy-4.png'))
 
     @nextcord.slash_command('joke', 'I will tell you random joke!', GUILDS)
     async def cmd_joke(self, inter: Interaction):
@@ -79,7 +78,7 @@ class Main(commands.Cog):
             em.set_thumbnail(url='attachment://sad.gif')
             em.set_footer(
                 text=f'CODE: {resp.status_code} | JSON: {resp.json()}')
-            await inter.edit_original_message(embed=em, file=nextcord.File('./assets/sad.gif'))
+            await inter.edit_original_message(embed=em, file=nextcord.File('./assets/emotes/sad.gif'))
             return
 
         joke = resp.json()
@@ -104,7 +103,7 @@ class Main(commands.Cog):
         em.set_author(name=inter.user.name,
                       icon_url=inter.user.avatar.url if inter.user.avatar is not None else None)
         em.set_thumbnail(url='attachment://happy-5.gif')
-        await inter.edit_original_message(embed=em, file=nextcord.File('./assets/happy-5.gif'))
+        await inter.edit_original_message(embed=em, file=nextcord.File('./assets/emotes/happy-5.gif'))
 
     @nextcord.slash_command('mass_voice', 'Mute/unmute/deafen/undeafen all users in voicechannel', GUILDS)
     async def cmd_mass_voice(self, inter: Interaction, action: str = SlashOption('action', required=True, choices=['mute', 'deafen']), toggle: bool = SlashOption('toggle', required=True)):
@@ -115,7 +114,7 @@ class Main(commands.Cog):
             em = Embed(title="No permissions",
                        description="You don't have enough permissions to execute that command!", colour=Colour.brand_red())
             em.set_thumbnail(url='attachment://sad-3.png')
-            await inter.edit_original_message(embed=em, file=nextcord.File('./assets/sad-3.gif'))
+            await inter.edit_original_message(embed=em, file=nextcord.File('./assets/emotes/sad-3.gif'))
             return
 
         # checking voice channel
@@ -123,7 +122,7 @@ class Main(commands.Cog):
             em = Embed(title='You are not in VC!',
                        description='You need to join some VC to do that!', colour=Colour.brand_red())
             em.set_thumbnail(url='attachment://sad-3.png')
-            await inter.edit_original_message(embed=em, file=nextcord.File('./assets/sad-3.png'))
+            await inter.edit_original_message(embed=em, file=nextcord.File('./assets/emotes/sad-3.png'))
             return
 
         em = Embed(
@@ -131,7 +130,7 @@ class Main(commands.Cog):
         em.set_thumbnail(url='attachment://happy-5.gif')
         em.set_author(name=inter.user.name,
                       icon_url=inter.user.avatar.url if inter.user.avatar is not None else None)
-        await inter.edit_original_message(embed=em, file=nextcord.File('./assets/happy-5.gif'))
+        await inter.edit_original_message(embed=em, file=nextcord.File('./assets/emotes/happy-5.gif'))
 
         for user in inter.user.voice.channel.members:
             if action == 'mute':

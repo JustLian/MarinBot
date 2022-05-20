@@ -1,8 +1,8 @@
+import traceback
 import marin.db as db
-from nextcord import *
-from nextcord import Interaction, SlashOption, Colour
+from nextcord import Interaction, SlashOption, Colour, Embed
 import nextcord
-from nextcord.ext import commands, tasks
+from nextcord.ext import commands
 import asyncio
 import youtube_dl
 
@@ -60,10 +60,12 @@ class YTDLSource(nextcord.PCMVolumeTransformer):
 
 async def start_radio(bot: commands.Bot, guild_id: int, after=None) -> None:
     data = db.get_server(guild_id)
-    guild = await bot.fetch_guild(guild_id)
-    try:
-        channel: nextcord.VoiceChannel = await bot.fetch_channel(data['music_channel'])
-    except:
+    guild = bot.get_guild(guild_id)
+    if guild is None:
+        return
+
+    channel: nextcord.VoiceChannel = guild.get_channel(data['music_channel'])
+    if channel is None:
         return
 
     if guild.voice_client is not None:
@@ -81,10 +83,9 @@ async def start_radio(bot: commands.Bot, guild_id: int, after=None) -> None:
         if after is not None:
             after()
         for player in entries:
-            await channel.edit(name=channel.name.split(' | ')[0] + ' | ' + player[2])
             guild.voice_client.play(player[0], after=lambda e: print(
                 f'Player error: {e}') if e else None)
-            while guild.voice_client.is_playing():
+            while False if guild.voice_client is None else guild.voice_client.is_playing():
                 await asyncio.sleep(2)
 
 
@@ -102,6 +103,7 @@ class Radio(commands.Cog):
             except Exception as e:
                 print(
                     f'Error occurred in start_radio({self.bot}, {guild_id}): {e}')
+                traceback.print_exception(e)
 
     @nextcord.slash_command('setup_radio', 'Setup 24/7 radio on your server', GUILDS)
     async def cmd_setup_radio(self, inter: Interaction, url: str = SlashOption('playlist_link', 'Playlist link', True)):
@@ -111,14 +113,14 @@ class Radio(commands.Cog):
             em = Embed(title="No permissions",
                        description="You don't have enough permissions to execute that command!", colour=Colour.brand_red())
             em.set_thumbnail(url='attachment://sad-3.png')
-            await inter.edit_original_message(embed=em, file=nextcord.File('./assets/sad-3.gif'))
+            await inter.edit_original_message(embed=em, file=nextcord.File('./assets/emotes/sad-3.gif'))
             return
 
         if inter.user.voice is None:
             em = Embed(title='You are not in VC!',
                        description='You need to join some VC to do that!', colour=Colour.brand_red())
             em.set_thumbnail(url='attachment://sad-3.png')
-            await inter.edit_original_message(embed=em, file=nextcord.File('./assets/sad-3.png'))
+            await inter.edit_original_message(embed=em, file=nextcord.File('./assets/emotes/sad-3.png'))
             return
 
         channel = inter.user.voice.channel.id
@@ -130,11 +132,19 @@ class Radio(commands.Cog):
                    description='Use command /radio on to start your 24/7 radio!')
         em.set_thumbnail(url='attachment://happy-4.png')
 
-        await inter.edit_original_message(embed=em, file=nextcord.File('./assets/happy-4.png'))
+        await inter.edit_original_message(embed=em, file=nextcord.File('./assets/emotes/happy-4.png'))
 
     @nextcord.slash_command('radio', 'Enable/disable radio', GUILDS)
     async def cmd_radio(self, inter: Interaction, toggle: str = SlashOption('toggle', 'Enable/disable radio', True, ['on', 'off'])):
         await inter.response.defer()
+
+        if not inter.user.guild_permissions.administrator:
+            em = Embed(title="No permissions",
+                       description="You don't have enough permissions to execute that command!", colour=Colour.brand_red())
+            em.set_thumbnail(url='attachment://sad-3.png')
+            await inter.edit_original_message(embed=em, file=nextcord.File('./assets/emotes/sad-3.gif'))
+            return
+
         toggle = toggle == 'on'
         data = db.get_server(inter.guild.id)
 
@@ -142,14 +152,14 @@ class Radio(commands.Cog):
             em = Embed(title='Action already done',
                        description='Radio is already turned on/off', colour=Colour.brand_red())
             em.set_thumbnail(url='attachment://happy-2.png')
-            await inter.edit_original_message(embed=em, file=nextcord.File('./assets/happy-2.png'))
+            await inter.edit_original_message(embed=em, file=nextcord.File('./assets/emotes/happy-2.png'))
             return
 
         if data['music_channel'] == 0 or data['playlist_url'] == 'NONE':
             em = Embed(title='Setup radio first!',
                        description='Use command /setup_radio to setup radio on your server. (You must have Administrator permissions)', colour=Colour.brand_red())
             em.set_thumbnail(url='attachment://shouting-1.png')
-            await inter.edit_original_message(embed=em, file=nextcord.File('./assets/shouting-1.png'))
+            await inter.edit_original_message(embed=em, file=nextcord.File('./assets/emotes/shouting-1.png'))
             return
 
         if toggle:
@@ -184,7 +194,7 @@ class Radio(commands.Cog):
             em.title = 'Everything is done!'
             em.description = f'Radio will work 24/7!'
             em.set_thumbnail(url='attachment://happy-5.gif')
-            await inter.edit_original_message(embed=em, file=nextcord.File('./assets/happy-5.gif'))
+            await inter.edit_original_message(embed=em, file=nextcord.File('./assets/emotes/happy-5.gif'))
             return
 
         db.update_server(inter.guild.id, ('radio_enabled', 0))
@@ -194,7 +204,7 @@ class Radio(commands.Cog):
         em = Embed(title='Radio was disabled!',
                    description='Use command /radio on to enable it!', colour=Colour.purple())
         em.set_thumbnail(url='attachment://shouting-1.png')
-        await inter.edit_original_message(embed=em, file=nextcord.File('./assets/shouting-1.png'))
+        await inter.edit_original_message(embed=em, file=nextcord.File('./assets/emotes/shouting-1.png'))
 
 
 def setup(bot):

@@ -10,7 +10,7 @@ from nextcord.ext import commands
 with open('./secrets/bot_token', 'r') as f:
     _token = f.read().strip()
 
-bot = commands.Bot()
+bot = commands.Bot(intents=nextcord.Intents.all())
 
 
 @bot.event

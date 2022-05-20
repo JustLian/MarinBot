@@ -1,8 +1,6 @@
-from nextcord import *
-from nextcord import Interaction, SlashOption, Colour
+from nextcord import Interaction, SlashOption, Colour, Embed
 import nextcord
-from nextcord.ext import commands, tasks
-import requests
+from nextcord.ext import commands
 from mojang import MojangAPI
 
 from marin import GUILDS
@@ -25,7 +23,7 @@ class Stats(commands.Cog):
             em = Embed(title="Minecraft account doesn't exists",
                        description='You can take that name!', colour=Colour.brand_red())
             em.set_thumbnail(url='attachment://thinking.png')
-            await inter.edit_original_message(embed=em, file=nextcord.File('./assets/thinking.png'))
+            await inter.edit_original_message(embed=em, file=nextcord.File('./assets/emotes/thinking.png'))
             return
 
         profile = MojangAPI.get_profile(uuid)
