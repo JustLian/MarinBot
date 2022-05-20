@@ -25,13 +25,12 @@ class Main(commands.Cog):
         em = nextcord.Embed(title="Marin's commands",
                             description="List of all Marin's commands with description", colour=Colour.from_rgb(186, 82, 235))
         em.set_thumbnail(url='attachment://happy-2.png')
-        fields = {
-            '/search <type> <query>': 'Search for anime/manga.',
-            '/waifu <type> [category]': 'Get random waifu image!',
-            '/remind <time> [message]': 'I will ping you in this channel in <time>',
-            '/joke': 'Get some random joke',
-            '/im_bored': 'Ideas for things to do'
-        }
+        fields = {}
+        for command in self.bot.get_all_application_commands():
+            name = '/' + command.name
+            for opt in command.options.keys():
+                name += f' <{command.options[opt].name}>'
+            fields[name] = command.description
 
         for field in fields.keys():
             em.add_field(name=field, value=fields[field], inline=False)
@@ -62,8 +61,9 @@ class Main(commands.Cog):
         rem_time = (datetime.now() + td).strftime('%d-%H-%M')
 
         reminds[rem_time] = (inter.channel, inter.user, message)
-        em = Embed(title="I've got you!",
-                   description=f"Now just wait! I will ping you in this channel in {':'.join(time)} MM:HH:DD", colour=Colour.purple())
+        tm = f"{td[0]}:{td[1] if len(td) > 1 else '00'}:{td[2] if len(td) > 2 else '00'}"
+        em = Embed(title="Got you!",
+                   description=f"Now just wait! I will ping you in this channel in {tm} (MM:HH:DD)", colour=Colour.purple())
         em.set_thumbnail(url='attachment://happy-4.png')
         await inter.edit_original_message(embed=em, file=nextcord.File('./assets/emotes/happy-4.png'))
 
