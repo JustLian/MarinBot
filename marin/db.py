@@ -26,11 +26,11 @@ def create_server(id) -> None:
     db = _connect_db()
     cur = db.cursor()
 
-    cur.execute(f'''SELECT * FROM servers WHERE id = {id}''')
+    cur.execute('''SELECT * FROM servers WHERE id = ?''', (id))
     data = cur.fetchone()
     if data is None:
         cur.execute(
-            f'''INSERT INTO servers VALUES({id}, 0, 0, 0, "NONE",'''''' "{}")''')
+            '''INSERT INTO servers VALUES(?, 0, 0, 0, "NONE",'''''' "{}")''', (id))
         db.commit()
     cur.close()
     db.close()
@@ -40,11 +40,11 @@ def delete_server(id) -> None:
     db = _connect_db()
     cur = db.cursor()
 
-    cur.execute(f'''SELECT * FROM servers WHERE id = {id}''')
+    cur.execute('''SELECT * FROM servers WHERE id = ?''', (id))
     data = cur.fetchone()
     if data is not None:
         cur.execute(
-            f'''DELETE FROM servers WHERE id = {id}''')
+            '''DELETE FROM servers WHERE id = ?''', (id))
         db.commit()
     cur.close()
     db.close()
@@ -53,7 +53,7 @@ def delete_server(id) -> None:
 def get_server(id) -> dict:
     db = _connect_db()
     cur = db.cursor()
-    cur.execute(f'''SELECT * FROM servers WHERE id = {id}''')
+    cur.execute('''SELECT * FROM servers WHERE id = ?''', (id))
     d = cur.fetchone()
     cur.close()
     db.close()
@@ -63,7 +63,7 @@ def get_server(id) -> dict:
 def get_servers() -> list[int]:
     db = _connect_db()
     cur = db.cursor()
-    cur.execute(f'''SELECT id FROM servers''')
+    cur.execute('''SELECT id FROM servers''')
     d = cur.fetchall()
     cur.close()
     db.close()
@@ -83,7 +83,7 @@ def update_server(id, *args) -> None:
         else:
             continue
         cur.execute(
-            f'''UPDATE servers SET {st[0]} = {val} WHERE id = {id}''')
+            '''UPDATE servers SET ? = ? WHERE id = ?''', (st[0], val, id))
     db.commit()
     cur.close()
     db.close()
@@ -92,7 +92,7 @@ def update_server(id, *args) -> None:
 def account_exists(uId) -> bool:
     db = _connect_db()
     cur = db.cursor()
-    cur.execute(f'''SELECT * FROM users WHERE uId = {uId}''')
+    cur.execute('''SELECT * FROM users WHERE uId = ?''', (id))
     data = cur.fetchone()
     cur.close()
     db.close()
@@ -103,11 +103,11 @@ def create_account(uId, osuId) -> None:
     db = _connect_db()
     cur = db.cursor()
 
-    cur.execute(f'''SELECT * FROM users WHERE uId = {uId}''')
+    cur.execute('''SELECT * FROM users WHERE uId = ?''', (uId))
     data = cur.fetchone()
     if data is None:
         cur.execute(
-            f'''INSERT INTO users VALUES({uId}, {osuId})''')
+            '''INSERT INTO users VALUES(?, ?)''', ({uId}, {osuId}))
         db.commit()
     cur.close()
     db.close()
@@ -116,7 +116,7 @@ def create_account(uId, osuId) -> None:
 def get_account(uId) -> dict:
     db = _connect_db()
     cur = db.cursor()
-    cur.execute(f'''SELECT * FROM users WHERE uId = {uId}''')
+    cur.execute('''SELECT * FROM users WHERE uId = ?''', (uId))
     d = cur.fetchone()
     cur.close()
     db.close()
@@ -128,7 +128,7 @@ def update_account(uId, *args) -> None:
     cur = db.cursor()
     for st in args:
         cur.execute(
-            f'''UPDATE users SET {st[0]} = {st[1]} WHERE uId = {uId}''')
+            '''UPDATE users SET ? = ? WHERE uId = ?''', (st[0], st[1], uId))
     db.commit()
     cur.close()
     db.close()
