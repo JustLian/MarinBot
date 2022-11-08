@@ -1,3 +1,4 @@
+# Moved to Siesta Bot (https://siesta.euphoverse.moe - site might be down)
 # MarinBot
 Another general purpose bot with some unique functions :]
  [![CodeFactor](https://www.codefactor.io/repository/github/justlian/marinbot/badge)](https://www.codefactor.io/repository/github/justlian/marinbot)
